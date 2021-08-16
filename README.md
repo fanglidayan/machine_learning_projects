@@ -1,4 +1,4 @@
-# All homeworks are done by Fanglida Yan
+# All homework assignments are done by Fanglida Yan
 
 # Machine Learning Engineering Course Mini-Projects
 

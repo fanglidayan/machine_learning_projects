@@ -1,3 +1,5 @@
+# All homeworks are done by Fanglida Yan
+
 # Machine Learning Engineering Course Mini-Projects
 
 Welcome to the repository of the current mini-projects for the Machine Learning Engineering course. As you work through the curriculum, you will need to complete each mini-project and review and discuss them with your Mentor.

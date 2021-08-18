@@ -287,7 +287,7 @@ visually selected elements, which works in many browsers.
 .. _Selector Gadget: https://selectorgadget.com/
 
 
-XPath: a brief intro
+x: a brief intro
 ^^^^^^^^^^^^^^^^^^^^
 
 Besides `CSS`_, Scrapy selectors also support using `XPath`_ expressions:

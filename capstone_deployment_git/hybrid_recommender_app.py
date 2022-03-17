@@ -10,26 +10,59 @@ import h5py
 import pickle
 
 model = None
-bert_dic = None
-filtered_rank_dic=None
+bert_dic = {}
+filtered_rank_dic = {}
+movie_id_title_dic = {}
+complete_filtered_train_movie_id_dic = {}
+reversed_filtered_user_id_mapping_dic = {}
+filtered_movie_id_mapping_dic = {}
+# total number of users
+tot_user_num = 150244
+
 app = Flask(__name__)
 
 
 def load_model():
-    global model, bert_dic, filtered_rank_dic
+    global model, bert_dic, filtered_rank_dic, movie_id_title_dic,\
+           complete_filtered_train_movie_id_dic, reversed_filtered_user_id_mapping_dic,\
+           filtered_movie_id_mapping_dic
     # model variable refers to the global variable
     # with open('hybrid.h5', 'rb') as f:
     model = tensorflow.keras.models.load_model('hybrid.h5')
+
     with open('bert_dic_list.txt', 'rb') as fp:
-        bert_dic_list=pickle.load(fp)
-        bert_dic={}
+        bert_dic_list = pickle.load(fp)
         for ele in bert_dic_list:
-            bert_dic[ele[0]]=ele[1]
+            bert_dic[ele[0]] = ele[1]
+
     with open('filtered_rank_dic_list.txt', 'rb') as fp:
-        filtered_rank_dic_list=pickle.load(fp)
-        filtered_rank_dic={}
+        filtered_rank_dic_list = pickle.load(fp)
         for ele in filtered_rank_dic_list:
-            filtered_rank_dic[ele[0]]=ele[1]
+            filtered_rank_dic[ele[0]] = ele[1]
+
+    with open('movie_id_vs_movie_title_list.txt', 'rb') as fp:
+        movie_id_vs_movie_title_list = pickle.load(fp)
+        for ele in movie_id_vs_movie_title_list:
+            movie_id_title_dic[ele[0]] = ele[1]
+
+    with open('complete_filtered_train_movie_id_list.txt', 'rb') as fp:
+        complete_filtered_train_movie_id_list = pickle.load(fp)
+        for ele in complete_filtered_train_movie_id_list:
+            complete_filtered_train_movie_id_dic[ele[0]] = ele[1]
+
+    with open('filtered_user_id_mapping_list.txt', 'rb') as fp:
+        filtered_user_id_mapping_list = pickle.load(fp)
+        for ele in filtered_user_id_mapping_list:
+            reversed_filtered_user_id_mapping_dic[ele[1]] = ele[0]
+    
+    with open('filtered_movie_id_mapping_list.txt', 'rb') as fp:
+        filtered_movie_id_mapping_list = pickle.load(fp)
+        for ele in filtered_movie_id_mapping_list:
+            filtered_movie_id_mapping_dic[ele[0]] = ele[1]
+
+    del bert_dic_list, filtered_rank_dic_list, movie_id_vs_movie_title_list,\
+        complete_filtered_train_movie_id_list, filtered_user_id_mapping_list,\
+        filtered_movie_id_mapping_list
 
 @app.route('/')
 def home_endpoint():
@@ -39,27 +72,57 @@ def home_endpoint():
 
 @app.route('/predict', methods=['POST'])
 def get_prediction():
+    global tot_user_num
     # Works only for a single sample
     if request.method == 'POST':
-        X_user = np.array([int(request.get_json())])  # Get data posted as a json
-        if X_user[0]>150244:
-            prediction=filtered_rank_dic[4306]
-            prediction=float(str(prediction)[:5])
-            return 'the predicted movie rating for movie 7 and a new user is {}'\
-                    .format(prediction)+'\n'
+        user = int(request.get_json())
+        if user >= tot_user_num:
+            predictions = list(filtered_rank_dic.keys())[:10]
 
-        X_movie = np.array([7])
-        X_bert = np.array(pd.Series(np.array([4306])).map(bert_dic).to_list()) 
-        # runs globally loaded model on the data
-        prediction = model.predict([X_user, X_movie, X_bert])[0, 0]  
-        prediction+=filtered_rank_dic[4306]
-        if prediction<1: prediction=1
-        elif prediction>5: prediction=5
-        prediction=float(str(prediction)[:5])
-        
-    return 'the predicted movie rating for movie 7 and user {} is {}'\
-            .format(X_user[0], prediction)+'\n'
+            result=''
+            for i, prediction in enumerate(predictions):
+                result += "Top {} recommended movie: {}".format(i+1, movie_id_title_dic[prediction])
+                result += "\n"
+            return result
 
+        rank_dic_copy = filtered_rank_dic.copy()
+
+        # list of movies already rated in train set
+        already = complete_filtered_train_movie_id_dic[reversed_filtered_user_id_mapping_dic[user]]
+
+        # remove movies that are already in the train set
+        for ele in already:
+            rank_dic_copy.pop(ele)
+
+        # save a copy of movie ids
+        aaa = list(rank_dic_copy.keys())
+
+        # map movie ids to movie vocabulary number
+        X_bert = np.array(pd.Series(np.array(aaa)).map(bert_dic).tolist())
+        # map user ids to user vocabulary number
+        X_user = np.array([user for i in range(X_bert.shape[0])])
+
+        Y=model.predict([X_user, pd.Series(aaa).map(filtered_movie_id_mapping_dic).values, X_bert])
+        Y=Y[:,0]
+        Y=list(Y)
+
+        pred=[]
+        for iii, y in enumerate(Y):
+            pred.append([aaa[iii], y+filtered_rank_dic[aaa[iii]]])
+
+        # sort by score from high to low
+        pred.sort(key=lambda x : x[1], reverse=True)
+        pred=np.array(pred)
+        pred=pred[:10,0]
+        predictions=pd.Series(pred).map(movie_id_title_dic).tolist() 
+
+        result=''
+        for i, prediction in enumerate(predictions):
+            result += "Top {} recommended movie: {}".format(i+1, prediction)
+            result += "\n"
+        return result
+
+    return "something is wrong"
 
 if __name__ == '__main__':
     load_model()  # load model at the beginning once only

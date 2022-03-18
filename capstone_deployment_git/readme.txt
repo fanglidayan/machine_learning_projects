@@ -19,3 +19,20 @@ curl -X POST \
 Some files are too large to be uploaded to GitHub. For a
 complete list of files please see "complete_list_of_files.png"
 
+===============================================================
+
+When containerizing with Docker, don't forget to tune up the 
+memory from 4GB to 16GB. T
+
+After docker run command, the program takes quite a bit a time
+to load, during the loading phase, if we submit a POST request
+in terminal, the app will return the following:
+
+"curl: (52) Empty reply from server".
+
+This is normal. Please be patient, and wait until the app
+finishes loading, then submit POST request the same way
+we did when using the Flask API. 
+
+Typing "docker stats" in terminal help use visualize the
+containers running.

@@ -2,20 +2,36 @@
 
 import numpy as np
 from flask import Flask, request
-# from keras.models import load_model
-# import keras
-import tensorflow
 import pandas as pd
-import h5py
 import pickle
+import os
 
+# disable GPU
+os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+
+import tensorflow
+
+# declare a global variable for our model 
 model = None
+
+# bert_dic: {movie id : 768-dimensional vector for movie overview embedding}
 bert_dic = {}
+
+# filtered_rank_dic: {movie id : weighted average movie rating score}
 filtered_rank_dic = {}
+
+# movie_id_title_dic: {movie_id : movie title}
 movie_id_title_dic = {}
+
+# complete_filtered_train_movie_id_dic: {user id : a list of movie ids watched by this user in the training set}
 complete_filtered_train_movie_id_dic = {}
+
+# reversed_filtered_user_id_mapping_dic: {user id vocabulary number (0-tot_user_number) : user id}
 reversed_filtered_user_id_mapping_dic = {}
+
+# filtered_movie_id_mapping_dic: {movie id : movie id vocabulary number (0-tot number of movies in the training set)}
 filtered_movie_id_mapping_dic = {}
+
 # total number of users
 tot_user_num = 150244
 
@@ -23,11 +39,12 @@ app = Flask(__name__)
 
 
 def load_model():
+    # load our global variables
     global model, bert_dic, filtered_rank_dic, movie_id_title_dic,\
            complete_filtered_train_movie_id_dic, reversed_filtered_user_id_mapping_dic,\
            filtered_movie_id_mapping_dic
+
     # model variable refers to the global variable
-    # with open('hybrid.h5', 'rb') as f:
     model = tensorflow.keras.models.load_model('hybrid.h5')
 
     with open('bert_dic_list.txt', 'rb') as fp:
@@ -75,7 +92,10 @@ def get_prediction():
     global tot_user_num
     # Works only for a single sample
     if request.method == 'POST':
+        # read in user vocabulary number
         user = int(request.get_json())
+        
+        # if this user is not in the training set
         if user >= tot_user_num:
             predictions = list(filtered_rank_dic.keys())[:10]
 
@@ -99,7 +119,7 @@ def get_prediction():
 
         # map movie ids to movie vocabulary number
         X_bert = np.array(pd.Series(np.array(aaa)).map(bert_dic).tolist())
-        # map user ids to user vocabulary number
+
         X_user = np.array([user for i in range(X_bert.shape[0])])
 
         Y=model.predict([X_user, pd.Series(aaa).map(filtered_movie_id_mapping_dic).values, X_bert])
@@ -107,6 +127,8 @@ def get_prediction():
         Y=list(Y)
 
         pred=[]
+
+        # add back the weighted average score
         for iii, y in enumerate(Y):
             pred.append([aaa[iii], y+filtered_rank_dic[aaa[iii]]])
 
@@ -122,6 +144,7 @@ def get_prediction():
             result += "\n"
         return result
 
+    # if request.method != 'POST'
     return "something is wrong"
 
 if __name__ == '__main__':

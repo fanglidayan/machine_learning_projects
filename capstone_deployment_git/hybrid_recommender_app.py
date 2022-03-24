@@ -83,8 +83,8 @@ def load_model():
 
 @app.route('/')
 def home_endpoint():
-    return "To make movie recommendations for an existing user, please input an integer between 0 and 150244."+\
-            "\n"+"For a new user, please enter 150255."
+    return "To make movie recommendations for an existing user, please input an integer between 0 and 150243."+\
+            "\n"+"For a new user, please enter 150244."
 
 
 @app.route('/predict', methods=['POST'])

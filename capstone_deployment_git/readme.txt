@@ -19,6 +19,9 @@ curl -X POST \
 Some files are too large to be uploaded to GitHub. For a
 complete list of files please see "complete_list_of_files.png"
 
+There files can be downloaded from the public Google Drive folder:
+https://drive.google.com/drive/u/0/folders/1bXttUXgTHE_x0IbAQ8GgZHHDd0L4vlji
+
 ===============================================================
 
 When containerizing with Docker, don't forget to tune up the 

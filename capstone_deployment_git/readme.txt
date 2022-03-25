@@ -41,20 +41,20 @@ containers running.
 
 use the bash command below to log in to the ec2 instance:
 
-ssh -i ~/path/my-key-pair.pem ec2-user@ec2-54-196-243-93.compute-1.amazonaws.com
+ssh -i ~/path/my-key-pair.pem ec2-user@ec2-54-196-185-210.compute-1.amazonaws.com
 
 ===============================================================
 
 use the bash command below to copy some files to the ec2 instance:
 
-scp -i /path/my-key-pair.pem -r ~/desktop/folder_to_be_copied ec2-user@ec2-54-196-243-93.compute-1.amazonaws.com:/home/ec2-user
+scp -i /path/my-key-pair.pem -r ~/desktop/folder_to_be_copied ec2-user@ec2-54-196-185-210.compute-1.amazonaws.com:/home/ec2-user
 
 ===============================================================
 
 use the following curl post request to make a prediction ('1231' is a user vocabulary number)
 
 curl -X POST \
-http://ec2-54-196-243-93.compute-1.amazonaws.com:80/predict \
+http://ec2-54-196-185-210.compute-1.amazonaws.com:80/predict \
 -H 'Content-Type: application/json' \
 -d '1231'
 

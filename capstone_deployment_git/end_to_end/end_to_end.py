@@ -41,9 +41,7 @@ user = int(input(''))
 
 def load_model():
     # load our global variables
-    global model, bert_dic, filtered_rank_dic, movie_id_title_dic,\
-           complete_filtered_train_movie_id_dic, reversed_filtered_user_id_mapping_dic,\
-           filtered_movie_id_mapping_dic
+    global model
 
     # model variable refers to the global variable
     model = tensorflow.keras.models.load_model('../hybrid.h5')
@@ -84,9 +82,7 @@ def load_model():
 
 load_model()
 
-def get_prediction(user, tot_user_num):
-
-    global movie_id_title_dic 
+def get_prediction():
 
     # if this user is not in the training set
     if user >= tot_user_num:
@@ -129,6 +125,6 @@ def get_prediction(user, tot_user_num):
     return gts.get_the_string(predictions, movie_id_title_dic)
 
 
-print(get_prediction(user, tot_user_num))
+print(get_prediction())
 
 

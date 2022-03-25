@@ -1,14 +1,9 @@
 # Serve model as a flask application
-
 import numpy as np
 from flask import Flask, request
 import pandas as pd
 import pickle
 import os
-
-# disable GPU
-os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
-
 import tensorflow
 
 # declare a global variable for our model 
@@ -40,9 +35,7 @@ app = Flask(__name__)
 
 def load_model():
     # load our global variables
-    global model, bert_dic, filtered_rank_dic, movie_id_title_dic,\
-           complete_filtered_train_movie_id_dic, reversed_filtered_user_id_mapping_dic,\
-           filtered_movie_id_mapping_dic
+    global model
 
     # model variable refers to the global variable
     model = tensorflow.keras.models.load_model('hybrid.h5')
@@ -89,7 +82,7 @@ def home_endpoint():
 
 @app.route('/predict', methods=['POST'])
 def get_prediction():
-    global tot_user_num
+
     # Works only for a single sample
     if request.method == 'POST':
         # read in user vocabulary number

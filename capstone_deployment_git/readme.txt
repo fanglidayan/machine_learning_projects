@@ -58,6 +58,10 @@ http://ec2-54-196-243-93.compute-1.amazonaws.com:80/predict \
 -H 'Content-Type: application/json' \
 -d '1231'
 
+===============================================================
 
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+
+solution: sudo systemctl start docker
 
 
